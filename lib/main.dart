@@ -1,12 +1,38 @@
 import 'package:flutter/material.dart';
 
+
+// Games = Game[]
+// CurrentGame = Game;
+// type Game = {
+//    gameType: number;
+//    usScore: number;
+//    theyScore: number;
+// }
+
 void main() {
   runApp(const MyApp());
 }
 
+class BaseLayout extends StatelessWidget{
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("/images/bg.jpg"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: null /* add child content here */,
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
+  
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -22,9 +48,14 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green, //TODO: change to #14A83D
+        scaffoldBackgroundColor: Colors.green[400],
+        buttonTheme: const ButtonThemeData(
+          buttonColor: Colors.deepPurple,     //  <-- dark color
+          textTheme: ButtonTextTheme.primary, //  <-- this auto selects the right color
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Debertz'),
     );
   }
 }
@@ -47,8 +78,31 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+class Game {
+  int gameType;
+  int usScore;
+  int theyScore;
+
+  Game({this.gameType = 162, this.usScore = 0, this.theyScore = 0});
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  // List<Game> _gamesArr = [];
+  final currentGame = Game();
+
+
+  void _currentGameChange() {
+    setState(() {
+      // currentGame = 
+    });
+  }
+
+  void _addGame(game) {
+    setState(() {
+      // _gamesArr = _gamesArr.push(game);
+    });
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -75,7 +129,14 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("images/cards.png"),
+            fit: BoxFit.scaleDown,
+            scale: 0.5,
+          ),
+        ),
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
@@ -95,6 +156,22 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            TextFormField(
+              keyboardType: TextInputType.number,
+              onChanged: (text) {
+                currentGame.gameType = text as int;
+                // print('First text field: $text');
+              },
+              decoration: const InputDecoration(
+                hintText: 'Enter game score',
+              ),
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+            ),
             const Text(
               'You have 6 the button this many times:',
             ),
@@ -125,7 +202,25 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                width: 300,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    // backgroundColor: MaterialStateProperty.all(Colors.white),
+                    padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
+                    textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 24, color: Colors.green))
+                  ),
+                  onPressed: () {},
+                  child: const Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Text('Enter Points'),
+                  ),
+                ),
               ),
+            ),
           ],
         ),
       ),
