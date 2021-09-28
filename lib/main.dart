@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-
-
-// Games = Game[]
-// CurrentGame = Game;
-// type Game = {
-//    gameType: number;
-//    usScore: number;
-//    theyScore: number;
-// }
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -60,6 +52,126 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class Game {
+  int gameType;
+  int usScore;
+  int theyScore;
+
+  Game({this.gameType = 162, this.usScore = 0, this.theyScore = 0});
+}
+
+class UserInput extends StatefulWidget {
+  const UserInput({Key? key}) : super(key: key);
+
+  @override
+  _UserInputState createState() => _UserInputState();
+}
+
+
+class _UserInputState extends State<UserInput> {
+  late int gameTypeInput;
+  late int usScoreInput;
+  late int theyScoreInput;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Card(
+        child: Column(
+          children: <Widget>[
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Game Score',
+              ),
+              onChanged: (val) {
+                gameTypeInput = int.parse(val);
+              },
+            ),
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'US Score',
+              ),
+              onChanged: (val) {
+                usScoreInput = int.parse(val);
+                theyScoreInput = gameTypeInput - int.parse(val); //TODO: should be shown for user
+              },
+            ),
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'They Score',
+              ),
+              onChanged: (val) {
+                theyScoreInput = int.parse(val);
+              },
+            ),
+            TextButton(
+              child: const Text('submit'),
+              onPressed: () {
+                //TODO: call _dismissDialog() or lift this btn up
+                events.add(Game(
+                    gameType: gameTypeInput,
+                    usScore: usScoreInput,
+                    theyScore: theyScoreInput
+                  )
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class GamesTable extends StatefulWidget {
+  @override
+  _GamesTableState createState() => _GamesTableState();
+}
+
+StreamController<Game> events = StreamController<Game>();
+
+
+class _GamesTableState extends State<GamesTable> {
+  List<Game> gameNodes = [];
+
+  @override
+  initState() {
+    super.initState();  //TODO check if this nessesary
+    events.stream.listen((data) {
+      gameNodes.add(data);
+      setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: gameNodes.map((node) {
+          return Card(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(children: [
+                    // TODO: get game index and increment it
+                    Text(gameNodes.indexOf(node).toString(), style: const TextStyle(color: Colors.green))
+                  ]),
+                  Column(children: [
+                      Text(node.usScore.toString())
+                  ]),
+                  Column(children: [
+                    Text(node.theyScore.toString())
+                  ]),
+                ],
+              ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
@@ -78,31 +190,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class Game {
-  int gameType;
-  int usScore;
-  int theyScore;
-
-  Game({this.gameType = 162, this.usScore = 0, this.theyScore = 0});
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  // List<Game> _gamesArr = [];
-  final currentGame = Game();
-
-
-  void _currentGameChange() {
-    setState(() {
-      // currentGame = 
-    });
-  }
-
-  void _addGame(game) {
-    setState(() {
-      // _gamesArr = _gamesArr.push(game);
-    });
-  }
 
   void _incrementCounter() {
     setState(() {
@@ -156,22 +245,6 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            TextFormField(
-              keyboardType: TextInputType.number,
-              onChanged: (text) {
-                currentGame.gameType = text as int;
-                // print('First text field: $text');
-              },
-              decoration: const InputDecoration(
-                hintText: 'Enter game score',
-              ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              },
-            ),
             const Text(
               'You have 6 the button this many times:',
             ),
@@ -203,17 +276,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
+            Expanded(flex: 1, child: GamesTable()),
             Align(
               alignment: Alignment.bottomCenter,
               child: SizedBox(
                 width: 300,
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    // backgroundColor: MaterialStateProperty.all(Colors.white),
                     padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 24, color: Colors.green))
                   ),
-                  onPressed: () {},
+                  onPressed: _showMaterialDialog,
                   child: const Padding(
                     padding: EdgeInsets.all(10.0),
                     child: Text('Enter Points'),
@@ -230,5 +303,42 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+
+void _showMaterialDialog() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Material Dialog'),
+            content: Column(
+              children: const <Widget>[
+                 Text(
+                    'test',
+                  ),
+                Expanded(flex: 1, child: UserInput()),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    _dismissDialog();
+                  },
+                  child: const Text('Close')),
+              TextButton(
+                onPressed: () {
+                  print('HelloWorld!');
+                  _dismissDialog();
+                },
+                child: const Text('HelloWorld!'),
+              )
+            ],
+          );
+        });
+  }
+
+  _dismissDialog() {
+    Navigator.pop(context);
   }
 }
